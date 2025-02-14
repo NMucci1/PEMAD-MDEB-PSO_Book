@@ -1,0 +1,778 @@
+---
+title: "Community Offshore Wind"
+format: html
+editor: visual
+css: styles.css
+editor_options: 
+  chunk_output_type: console
+---
+
+## Project 222066 (*Westerly*)
+
+### Operation Activity
+
+Total hours of sparker operation:
+
+```{r}
+#| echo: false
+#| warning: false
+
+setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
+#load libraries
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(gt)
+
+#import tidy data
+#import with latin encoding because some PSO names have accents
+visualdetect <- readr::read_csv("data/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
+effort <- readr::read_csv("data/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
+portcall <- readr::read_csv("data/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+operations_westerly <- operations %>% filter(VESSEL == "Westerly") 
+
+sparker_sursource <- operations_westerly %>% hms(operations_westerly$DUR_SURSOURCE) %>% period_to_seconds()
+sparker_sursource <- (((sum(sparker_sursource, na.rm=TRUE))/60)/60)
+
+sparker_soft <- operations_westerly %>% hms(operations_westerly$DUR_SOFTSTART) %>% period_to_seconds()
+sparker_soft <- (((sum(sparker_soft, na.rm=TRUE))/60)/60)
+
+sparker_test <- operations_westerly %>% hms(operations_westerly$DUR_TEST) %>% period_to_seconds()
+sparker_test <- (((sum(sparker_test, na.rm=TRUE))/60)/60)
+
+sparker_presursource <- operations_westerly %>% hms(operations_westerly$DUR_PRESURSOURCE) %>% period_to_seconds()
+sparker_presursource <- (((sum(sparker_presursource, na.rm=TRUE))/60)/60)
+
+sparker_postsur <- operations_westerly %>% hms(operations_westerly$DUR_POSTSUR) %>% period_to_seconds()
+sparker_postsur <- (((sum(sparker_postsur, na.rm=TRUE))/60)/60)
+
+total_sparkerop <- sum(sparker_sursource, sparker_soft, sparker_test, sparker_presursource, sparker_postsur)
+
+vessel <- c("Westerly")
+date <- c("8/28/2023 - 9/28/2023")
+operation <- c(total_sparkerop)%>% round(digits=2)
+df <- data.frame(vessel = vessel, date=date, operation = operation)
+
+op_table <- gt(df) %>% cols_label(vessel = "Survey Vessel", date= "Dates of Operation", operation= "Total Hours of Sparker Operation (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+op_table
+```
+
+### Monitoring Effort
+
+Summary of monitoring effort:
+
+```{r}
+#| echo: false
+#| warning: false
+
+effort_westerly <- effort %>% filter(VESSEL == "Westerly") 
+day_obs <- hms(effort_westerly$VIS_DAY_OBS)
+night_obs <- hms(effort_westerly$VIS_NIGHT_OBS)
+#no acoustic observations
+day_obs_sec <- period_to_seconds(day_obs)
+day_obs_hrs <- (((sum(day_obs_sec, na.rm=TRUE))/60)/60)
+night_obs_sec <- period_to_seconds(night_obs)
+night_obs_hrs <- (((sum(night_obs_sec, na.rm=TRUE))/60)/60)
+
+total_obs <- (day_obs_hrs + night_obs_hrs)
+#sparkers active 
+
+sparkers_day <- (hms(effort_westerly$SOURCE_DAY_OBS))
+sparkers_day_sec <- period_to_seconds(sparkers_day)
+sparkers_day_hrs <- (((sum(sparkers_day_sec, na.rm=TRUE))/60)/60)
+sparkers_nite <- hms(effort_westerly$SOURCE_NIGHT_OBS)
+sparkers_nite_sec <- period_to_seconds(sparkers_nite)
+sparkers_nite_hrs <- (((sum(sparkers_nite_sec, na.rm=TRUE))/60)/60)
+
+sparkers_active <- sum(sparkers_nite_hrs + sparkers_day_hrs)
+sparkers_inactive <- total_obs -sparkers_active 
+
+monitoring <- c("Sparker active", "Sparker not active", "Daytime", "Nighttime", "Total")
+visual <- c(sparkers_active, sparkers_inactive, day_obs_hrs, night_obs_hrs,  total_obs) %>% round(digits=2)
+
+
+df <- data.frame(Monitoring=monitoring, Visual = visual)
+
+monitoring_table <- gt(df) %>% cols_label(Monitoring = "Monitoring effort", Visual= "Visual (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+monitoring_table
+```
+
+### Environmental Conditions
+
+Summary of visibility conditions during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+effort_westerly$VISIBIL <- gsub("5-Feb", "2-5", effort_westerly$VISIBIL)
+effort_westerly$VISIBIL <- gsub("2-Jan", "1-2", effort_westerly$VISIBIL)
+#visibility conditions
+#print(unique(effort_westerly$VISIBIL))
+#monitoring effort with >5 km visibiilIty = 2211.18 hrs
+effort_highvis <- filter(effort_westerly, VISIBIL == ">5")
+effort_high <- hms(effort_highvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_high <- (((sum(effort_high, na.rm=TRUE))/60)/60)
+effort_high_PV <- hms(effort_highvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_high_PV <- (((sum(effort_high_PV, na.rm=TRUE))/60)/60)
+effort_night <- hms(effort_highvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_night <- (((sum(effort_night, na.rm=TRUE))/60)/60)
+effort_high_P <- hms(effort_highvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_high_P <- (((sum(effort_high_P, na.rm=TRUE))/60)/60)
+greater_five <- (effort_high + effort_high_PV + effort_night + effort_high_P)
+
+effort_midvis <- filter(effort_westerly, VISIBIL == "2-5")
+effort_midvis_day <- hms(effort_midvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_midvis_day <- (((sum(effort_midvis_day, na.rm=TRUE))/60)/60)
+effort_midvis_night <- hms(effort_midvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_midvis_night <- (((sum(effort_midvis_night, na.rm=TRUE))/60)/60)
+effort_midvis_PV <- hms(effort_midvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_midvis_PV <- (((sum(effort_midvis_PV, na.rm=TRUE))/60)/60)
+effort_midvis_P <- hms(effort_midvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_midvis_P <- (((sum(effort_midvis_P, na.rm=TRUE))/60)/60)
+
+two_to_five <- (effort_midvis_day + effort_midvis_night + effort_midvis_P + effort_midvis_PV)
+
+effort_lowvis <- filter(effort_westerly, VISIBIL == "0.5-1" | VISIBIL == "1-2" | VISIBIL == "0.05-0.1" |
+                          VISIBIL == "0.3-0.5" | VISIBIL == "<.05" |VISIBIL == "0.1-0.3" )
+effort_lowvis_day <- hms(effort_lowvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_lowvis_day <- (((sum(effort_lowvis_day, na.rm=TRUE))/60)/60)
+effort_lowvis_night <- hms(effort_lowvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_lowvis_night <- (((sum(effort_lowvis_night, na.rm=TRUE))/60)/60)
+effort_lowvis_PV <- hms(effort_lowvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_lowvis_PV <- (((sum(effort_lowvis_PV, na.rm=TRUE))/60)/60)
+effort_lowvis_P <- hms(effort_lowvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_lowvis_P <- (((sum(effort_lowvis_P, na.rm=TRUE))/60)/60)
+
+less_than_2 <- (effort_lowvis_P + effort_lowvis_PV + effort_lowvis_night + effort_lowvis_day)
+
+Visibility <- c("Greater than 5 km", "2 to 5 km", "Less than 2 km")
+Duration <- c(greater_five, two_to_five, less_than_2) %>% round(digits=2)
+df<- data.frame(Visibility=Visibility, Duration=Duration)
+  
+visibility_table <- gt(df) %>% cols_label(Visibility = "Visibility", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+visibility_table
+```
+
+Summary of swell height during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+effort_westerly$SWELL <- gsub("4-Feb", "2-4", effort_westerly$SWELL)
+lowswell <- filter(effort_westerly, SWELL == "<2")
+s_day <- hms(lowswell$VIS_DAY_OBS) %>% period_to_seconds()
+s_day <- (((sum(s_day, na.rm=TRUE))/60)/60)
+s_night <- hms(lowswell$VIS_NIGHT_OBS) %>% period_to_seconds()
+s_night <- (((sum(s_night, na.rm=TRUE))/60)/60)
+s_PAM <- hms(lowswell$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+s_PAM <- (((sum(s_PAM, na.rm=TRUE))/60)/60)
+d_PAM <- hms(lowswell$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+d_PAM <- (((sum(d_PAM, na.rm=TRUE))/60)/60)
+low_swell <- (s_day + s_night + s_PAM + d_PAM)
+#swell 2-4 meters- 143.08 hrs
+# midswell <- filter(effort_westerly, SWELL == "2-4")
+# m_day <- hms(midswell$VIS_DAY_OBS) %>% period_to_seconds()
+# m_day <- (((sum(m_day, na.rm=TRUE))/60)/60)
+# m_night <- hms(midswell$VIS_NIGHT_OBS) %>% period_to_seconds()
+# m_night <- (((sum(m_night, na.rm=TRUE))/60)/60)
+# m_PAM <- hms(midswell$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+# m_PAM <- (((sum(m_PAM, na.rm=TRUE))/60)/60)
+# mid_swell <- (m_day + m_night + m_PAM)
+
+Swell = c("Less than 2 m", "2 to 4 m")
+Duration <- c(low_swell, 0)%>% round(digits=2)
+df<- data.frame(Swell=Swell, Duration=Duration)
+  
+Swell_table <- gt(df) %>% cols_label(Swell = "Swell", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+Swell_table
+```
+
+Beaufort Sea State during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+#Beaufort Sea State during monitoring
+#B1 
+effort_B1 <- filter(effort_westerly, BEAUF == 1)
+effort_B1_day <- hms(effort_B1$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B1_day <- (((sum(effort_B1_day, na.rm=TRUE))/60)/60)
+effort_B1_night <- hms(effort_B1$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B1_night <- (((sum(effort_B1_night, na.rm=TRUE))/60)/60)
+effort_B1_PAM <- hms(effort_B1$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B1_PAM <- (((sum(effort_B1_PAM, na.rm=TRUE))/60)/60)
+effort_B1_P <- hms(effort_B1$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B1_P <- (((sum(effort_B1_P, na.rm=TRUE))/60)/60)
+b1 <- (effort_B1_day + effort_B1_night + effort_B1_PAM + effort_B1_P)
+#B2
+effort_B2 <- filter(effort_westerly, BEAUF == 2)
+effort_B2_day <- hms(effort_B2$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B2_day <- (((sum(effort_B2_day, na.rm=TRUE))/60)/60)
+effort_B2_night <- hms(effort_B2$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B2_night <- (((sum(effort_B2_night, na.rm=TRUE))/60)/60)
+effort_B2_PAM <- hms(effort_B2$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B2_PAM <- (((sum(effort_B2_PAM, na.rm=TRUE))/60)/60)
+effort_B2_P <- hms(effort_B2$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B2_P <- (((sum(effort_B2_P, na.rm=TRUE))/60)/60)
+b2 <- (effort_B2_day + effort_B2_night + effort_B2_PAM +effort_B2_P)
+#B3
+effort_B3 <- filter(effort_westerly, BEAUF == 3)
+effort_B3_day <- hms(effort_B3$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B3_day <- (((sum(effort_B3_day, na.rm=TRUE))/60)/60)
+effort_B3_night <- hms(effort_B3$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B3_night <- (((sum(effort_B3_night, na.rm=TRUE))/60)/60)
+effort_B3_PAM <- hms(effort_B3$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B3_PAM <- (((sum(effort_B3_PAM, na.rm=TRUE))/60)/60)
+effort_B3_PAM_d <- hms(effort_B3$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B3_PAM_d <- (((sum(effort_B3_PAM_d, na.rm=TRUE))/60)/60)
+b3<-(effort_B3_day + effort_B3_night + effort_B3_PAM+effort_B3_PAM_d)
+#B4
+effort_B4 <- filter(effort_westerly, BEAUF == 4)
+effort_B4_day <- hms(effort_B4$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B4_day <- (((sum(effort_B4_day, na.rm=TRUE))/60)/60)
+effort_B4_night <- hms(effort_B4$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B4_night <- (((sum(effort_B4_night, na.rm=TRUE))/60)/60)
+effort_B4_PAM <- hms(effort_B4$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B4_PAM <- (((sum(effort_B4_PAM, na.rm=TRUE))/60)/60)
+b4<-(effort_B4_day + effort_B4_night + effort_B4_PAM)
+
+total <- b1+ b2+b3+b4
+Beaufort = c("B1", "B2", "B3", "B4", "Total")
+Duration <- c(b1, b2, b3, b4, total)%>% round(digits=2)
+df<- data.frame(Beaufort=Beaufort, Duration=Duration)
+  
+Beauf_table <- gt(df) %>% cols_label(Beaufort = "Beaufort Sea State", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+Beauf_table
+```
+
+### Visual Detections
+
+Total number of detection events by species:
+
+```{r}
+#| echo: false
+#| warning: false
+
+visualdetect_westerly <- visualdetect %>% filter(VESSEL == "Westerly")
+
+#detections by species
+species_summary <- visualdetect_westerly %>%
+  count(NAME_COMMON)
+species_table <- gt(species_summary) %>% cols_label(NAME_COMMON = "Species",
+                                          n = "Number of detection records")%>% tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+species_table
+```
+
+Total detected individuals by species:
+
+```{r}
+#| echo: false
+#| warning: false
+visualdetect_westerly$RANGE_VESSEL_START <- as.numeric(visualdetect_westerly$RANGE_VESSEL_START)
+
+individuals_summary <- visualdetect_westerly %>%
+  group_by(NAME_COMMON) %>%
+  summarize(
+    total_value = sum(TOT_NUM),
+            average_value = round(mean(TOT_NUM),1),
+            dist_value = round(mean(RANGE_VESSEL_START),0))
+
+ind_table <- gt(individuals_summary) %>% cols_label(NAME_COMMON = "Species",
+                  total_value = "Individuals Count",
+                  average_value = "Average group size",
+                  dist_value = "Average distance (m) from vessel at first detection")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+ind_table
+```
+
+Closest point of approach (CPA) to source (sparker) during detections:
+
+```{r}
+#| echo: false
+#| warning: false
+visualdetect_westerly$MITZONE_SILENTSOURCE_DIST <- as.numeric(visualdetect_westerly$MITZONE_SILENTSOURCE_DIST)
+CPA <- visualdetect_westerly %>%
+  group_by(NAME_COMMON) %>%
+  summarize(active_value = round(mean(MITZONE_ACTIVESOURCE_DIST, na.rm = TRUE),2),
+            inactive_value = round(mean(MITZONE_SILENTSOURCE_DIST, na.rm = TRUE),2))
+
+
+CPA_table <- gt(CPA) %>% cols_label(NAME_COMMON = "Species",
+                  active_value = "Mean CPA to active sparker (meters)",
+                  inactive_value = "Mean CPA to silent sparker (meters)") %>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+CPA_table
+```
+
+### Incidental Harassment Authorization (IHA) Level B Exposures
+
+There were no IHA Level B exposures during the survey.
+
+### Port Calls
+
+Port calls during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+portcall_westerly <- portcall %>% filter(VESSEL == "Westerly")
+
+
+portcall_table <- gt(portcall_westerly)%>% cols_label(PROJECT_NUMBER = "Project Number", VESSEL = "Vessel", DATE = "Date", TIME = "Time", PORT = "Port", ACTION = "Action", COMMENT_PORT_CALL= "Comments") %>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+portcall_table
+```
+
+## Project 222072 (*Sanco Swift*)
+
+### Operation Activity
+
+Total hours of sparker operation:
+
+```{r}
+#| echo: false
+#| warning: false
+setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
+#load libraries
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(gt)
+
+#import tidy data
+#import with latin encoding because some PSO names have accents
+visualdetect <- readr::read_csv("data/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
+effort <- readr::read_csv("data/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
+portcall <- readr::read_csv("data/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+operations_sanco <- operations %>% filter(VESSEL == "Sanco Swift") 
+
+sparker_sursource <- operations_sanco %>% hms(operations_sanco$DUR_SURSOURCE) %>% period_to_seconds()
+sparker_sursource <- (((sum(sparker_sursource, na.rm=TRUE))/60)/60)
+
+sparker_soft <- operations_sanco %>% hms(operations_sanco$DUR_SOFTSTART) %>% period_to_seconds()
+sparker_soft <- (((sum(sparker_soft, na.rm=TRUE))/60)/60)
+
+sparker_test <- operations_sanco %>% hms(operations_sanco$DUR_TEST) %>% period_to_seconds()
+sparker_test <- (((sum(sparker_test, na.rm=TRUE))/60)/60)
+
+sparker_presursource <- operations_sanco %>% hms(operations_sanco$DUR_PRESURSOURCE) %>% period_to_seconds()
+sparker_presursource <- (((sum(sparker_presursource, na.rm=TRUE))/60)/60)
+
+sparker_postsur <- operations_sanco %>% hms(operations_sanco$DUR_POSTSUR) %>% period_to_seconds()
+sparker_postsur <- (((sum(sparker_postsur, na.rm=TRUE))/60)/60)
+
+sparker_reduce <- operations_sanco %>% hms(operations_sanco$DUR_REDUCEDOUTPUT) %>% period_to_seconds()
+sparker_reduce <- (((sum(sparker_reduce, na.rm=TRUE))/60)/60)
+
+
+total_sparkerop <- sum(sparker_sursource, sparker_soft, sparker_test, sparker_presursource, sparker_postsur, sparker_reduce)
+
+vessel <- c("Sanco Swift")
+date <- c("9/20/2023 - 5/31/2024")
+operation <- c(total_sparkerop)%>% round(digits=2)
+df <- data.frame(vessel = vessel, date=date, operation = operation)
+
+op_table <- gt(df) %>% cols_label(vessel = "Survey Vessel", date= "Dates of Operation", operation= "Total Hours of Source Operation (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+op_table
+```
+
+### Monitoring Effort
+
+Summary of monitoring effort for survey:
+
+```{r}
+#| echo: false
+#| warning: false
+effort_sanco<- effort %>% filter(VESSEL == "Sanco Swift") 
+day_obs <- hms(effort_sanco$VIS_DAY_OBS)
+night_obs <- hms(effort_sanco$VIS_NIGHT_OBS)
+#no acoustic observations
+day_obs_sec <- period_to_seconds(day_obs)
+day_obs_hrs <- (((sum(day_obs_sec, na.rm=TRUE))/60)/60)
+night_obs_sec <- period_to_seconds(night_obs)
+night_obs_hrs <- (((sum(night_obs_sec, na.rm=TRUE))/60)/60)
+
+total_obs <- (day_obs_hrs + night_obs_hrs)
+#sparkers active 
+
+sparkers_day <- (hms(effort_sanco$SOURCE_DAY_OBS))
+sparkers_day_sec <- period_to_seconds(sparkers_day)
+sparkers_day_hrs <- (((sum(sparkers_day_sec, na.rm=TRUE))/60)/60)
+sparkers_nite <- hms(effort_sanco$SOURCE_NIGHT_OBS)
+sparkers_nite_sec <- period_to_seconds(sparkers_nite)
+sparkers_nite_hrs <- (((sum(sparkers_nite_sec, na.rm=TRUE))/60)/60)
+
+sparkers_active <- sum(sparkers_nite_hrs + sparkers_day_hrs)
+sparkers_inactive <- total_obs -sparkers_active 
+
+monitoring <- c("Sparker active", "Sparker not active", "Daytime", "Nighttime", "Total")
+visual <- c(sparkers_active, sparkers_inactive, day_obs_hrs, night_obs_hrs,  total_obs) %>% round(digits=2)
+
+
+df <- data.frame(Monitoring=monitoring, Visual = visual)
+
+monitoring_table <- gt(df) %>% cols_label(Monitoring = "Monitoring effort", Visual= "Visual (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+monitoring_table
+```
+
+### Environmental Conditions
+
+Summary of visibility conditions during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+effort_sanco$VISIBIL <- gsub("5-Feb", "2-5", effort_sanco$VISIBIL)
+effort_sanco$VISIBIL <- gsub("2-Jan", "1-2", effort_sanco$VISIBIL)
+#visibility conditions
+#print(unique(effort_westerly$VISIBIL))
+#monitoring effort with >5 km visibiilIty = 2211.18 hrs
+effort_highvis <- filter(effort_sanco, VISIBIL == ">5")
+effort_high <- hms(effort_highvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_high <- (((sum(effort_high, na.rm=TRUE))/60)/60)
+effort_high_PV <- hms(effort_highvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_high_PV <- (((sum(effort_high_PV, na.rm=TRUE))/60)/60)
+effort_night <- hms(effort_highvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_night <- (((sum(effort_night, na.rm=TRUE))/60)/60)
+effort_high_P <- hms(effort_highvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_high_P <- (((sum(effort_high_P, na.rm=TRUE))/60)/60)
+greater_five <- (effort_high + effort_high_PV + effort_night + effort_high_P)
+
+effort_midvis <- filter(effort_sanco, VISIBIL == "2-5")
+effort_midvis_day <- hms(effort_midvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_midvis_day <- (((sum(effort_midvis_day, na.rm=TRUE))/60)/60)
+effort_midvis_night <- hms(effort_midvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_midvis_night <- (((sum(effort_midvis_night, na.rm=TRUE))/60)/60)
+effort_midvis_PV <- hms(effort_midvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_midvis_PV <- (((sum(effort_midvis_PV, na.rm=TRUE))/60)/60)
+effort_midvis_P <- hms(effort_midvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_midvis_P <- (((sum(effort_midvis_P, na.rm=TRUE))/60)/60)
+
+two_to_five <- (effort_midvis_day + effort_midvis_night + effort_midvis_P + effort_midvis_PV)
+
+effort_lowvis <- filter(effort_sanco, VISIBIL == "0.5-1" | VISIBIL == "1-2" | VISIBIL == "0.05-0.1" |
+                          VISIBIL == "0.3-0.5" | VISIBIL == "<.05" |VISIBIL == "0.1-0.3" )
+effort_lowvis_day <- hms(effort_lowvis$VIS_DAY_OBS) %>% period_to_seconds()
+effort_lowvis_day <- (((sum(effort_lowvis_day, na.rm=TRUE))/60)/60)
+effort_lowvis_night <- hms(effort_lowvis$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_lowvis_night <- (((sum(effort_lowvis_night, na.rm=TRUE))/60)/60)
+effort_lowvis_PV <- hms(effort_lowvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_lowvis_PV <- (((sum(effort_lowvis_PV, na.rm=TRUE))/60)/60)
+effort_lowvis_P <- hms(effort_lowvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_lowvis_P <- (((sum(effort_lowvis_P, na.rm=TRUE))/60)/60)
+
+less_than_2 <- (effort_lowvis_P + effort_lowvis_PV + effort_lowvis_night + effort_lowvis_day)
+
+Visibility <- c("Greater than 5 km", "2 to 5 km", "Less than 2 km")
+Duration <- c(greater_five, two_to_five, less_than_2) %>% round(digits=2)
+df<- data.frame(Visibility=Visibility, Duration=Duration)
+  
+visibility_table <- gt(df) %>% cols_label(Visibility = "Visibility", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+visibility_table
+```
+
+Summary of swell height during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+effort_sanco$SWELL <- gsub("4-Feb", "2-4", effort_sanco$SWELL)
+lowswell <- filter(effort_sanco, SWELL == "<2")
+s_day <- hms(lowswell$VIS_DAY_OBS) %>% period_to_seconds()
+s_day <- (((sum(s_day, na.rm=TRUE))/60)/60)
+s_night <- hms(lowswell$VIS_NIGHT_OBS) %>% period_to_seconds()
+s_night <- (((sum(s_night, na.rm=TRUE))/60)/60)
+s_PAM <- hms(lowswell$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+s_PAM <- (((sum(s_PAM, na.rm=TRUE))/60)/60)
+d_PAM <- hms(lowswell$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+d_PAM <- (((sum(d_PAM, na.rm=TRUE))/60)/60)
+low_swell <- (s_day + s_night + s_PAM + d_PAM)
+#swell 2-4 meters- 143.08 hrs
+midswell <- filter(effort_sanco, SWELL == "2-4")
+m_day <- hms(midswell$VIS_DAY_OBS) %>% period_to_seconds()
+m_day <- (((sum(m_day, na.rm=TRUE))/60)/60)
+m_night <- hms(midswell$VIS_NIGHT_OBS) %>% period_to_seconds()
+m_night <- (((sum(m_night, na.rm=TRUE))/60)/60)
+m_PAM <- hms(midswell$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+m_PAM <- (((sum(m_PAM, na.rm=TRUE))/60)/60)
+mid_swell <- (m_day + m_night + m_PAM)
+#swell 2-4 meters- 143.08 hrs
+highswell <- filter(effort_sanco, SWELL == ">4")
+h_day <- hms(highswell$VIS_DAY_OBS) %>% period_to_seconds()
+h_day <- (((sum(h_day, na.rm=TRUE))/60)/60)
+h_night <- hms(highswell$VIS_NIGHT_OBS) %>% period_to_seconds()
+h_night <- (((sum(h_night, na.rm=TRUE))/60)/60)
+h_PAM <- hms(highswell$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+h_PAM <- (((sum(h_PAM, na.rm=TRUE))/60)/60)
+high_swell <- (h_day + h_night + h_PAM)
+
+Swell = c("Less than 2 m", "2 to 4 m", "Greater than 4 m")
+Duration <- c(low_swell, mid_swell, high_swell)%>% round(digits=2)
+df<- data.frame(Swell=Swell, Duration=Duration)
+  
+Swell_table <- gt(df) %>% cols_label(Swell = "Swell", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+Swell_table
+```
+
+Summary of Beaufort Sea State during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+#Beaufort Sea State during monitoring
+#B1 
+effort_B1 <- filter(effort_sanco, BEAUF == 1)
+effort_B1_day <- hms(effort_B1$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B1_day <- (((sum(effort_B1_day, na.rm=TRUE))/60)/60)
+effort_B1_night <- hms(effort_B1$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B1_night <- (((sum(effort_B1_night, na.rm=TRUE))/60)/60)
+effort_B1_PAM <- hms(effort_B1$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B1_PAM <- (((sum(effort_B1_PAM, na.rm=TRUE))/60)/60)
+effort_B1_P <- hms(effort_B1$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B1_P <- (((sum(effort_B1_P, na.rm=TRUE))/60)/60)
+b1 <- (effort_B1_day + effort_B1_night + effort_B1_PAM + effort_B1_P)
+#B2
+effort_B2 <- filter(effort_sanco, BEAUF == 2)
+effort_B2_day <- hms(effort_B2$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B2_day <- (((sum(effort_B2_day, na.rm=TRUE))/60)/60)
+effort_B2_night <- hms(effort_B2$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B2_night <- (((sum(effort_B2_night, na.rm=TRUE))/60)/60)
+effort_B2_PAM <- hms(effort_B2$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B2_PAM <- (((sum(effort_B2_PAM, na.rm=TRUE))/60)/60)
+effort_B2_P <- hms(effort_B2$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B2_P <- (((sum(effort_B2_P, na.rm=TRUE))/60)/60)
+b2 <- (effort_B2_day + effort_B2_night + effort_B2_PAM +effort_B2_P)
+#B3
+effort_B3 <- filter(effort_sanco, BEAUF == 3)
+effort_B3_day <- hms(effort_B3$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B3_day <- (((sum(effort_B3_day, na.rm=TRUE))/60)/60)
+effort_B3_night <- hms(effort_B3$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B3_night <- (((sum(effort_B3_night, na.rm=TRUE))/60)/60)
+effort_B3_PAM <- hms(effort_B3$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B3_PAM <- (((sum(effort_B3_PAM, na.rm=TRUE))/60)/60)
+effort_B3_PAM_d <- hms(effort_B3$VIS_PAM_DAY_OBS) %>% period_to_seconds()
+effort_B3_PAM_d <- (((sum(effort_B3_PAM_d, na.rm=TRUE))/60)/60)
+b3<-(effort_B3_day + effort_B3_night + effort_B3_PAM+effort_B3_PAM_d)
+#B4
+effort_B4 <- filter(effort_sanco, BEAUF == 4)
+effort_B4_day <- hms(effort_B4$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B4_day <- (((sum(effort_B4_day, na.rm=TRUE))/60)/60)
+effort_B4_night <- hms(effort_B4$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B4_night <- (((sum(effort_B4_night, na.rm=TRUE))/60)/60)
+effort_B4_PAM <- hms(effort_B4$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B4_PAM <- (((sum(effort_B4_PAM, na.rm=TRUE))/60)/60)
+b4<-(effort_B4_day + effort_B4_night + effort_B4_PAM)
+#B5
+effort_B5 <- filter(effort_sanco, BEAUF == 5)
+effort_B5_day <- hms(effort_B5$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B5_day <- (((sum(effort_B5_day, na.rm=TRUE))/60)/60)
+effort_B5_night <- hms(effort_B5$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B5_night <- (((sum(effort_B5_night, na.rm=TRUE))/60)/60)
+effort_B5_PAM <- hms(effort_B5$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B5_PAM <- (((sum(effort_B5_PAM, na.rm=TRUE))/60)/60)
+b5<-(effort_B5_day + effort_B5_night + effort_B5_PAM)
+#B6
+effort_B6 <- filter(effort_sanco, BEAUF == 6)
+effort_B6_day <- hms(effort_B6$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B6_day <- (((sum(effort_B6_day, na.rm=TRUE))/60)/60)
+effort_B6_night <- hms(effort_B6$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B6_night <- (((sum(effort_B6_night, na.rm=TRUE))/60)/60)
+effort_B6_PAM <- hms(effort_B6$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B6_PAM <- (((sum(effort_B6_PAM, na.rm=TRUE))/60)/60)
+b6<-(effort_B6_day + effort_B6_night + effort_B6_PAM)
+#B7
+effort_B7 <- filter(effort_sanco, BEAUF == 7)
+effort_B7_day <- hms(effort_B7$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B7_day <- (((sum(effort_B7_day, na.rm=TRUE))/60)/60)
+effort_B7_night <- hms(effort_B7$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B7_night <- (((sum(effort_B7_night, na.rm=TRUE))/60)/60)
+effort_B7_PAM <- hms(effort_B7$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B7_PAM <- (((sum(effort_B7_PAM, na.rm=TRUE))/60)/60)
+b7<-(effort_B7_day + effort_B7_night + effort_B7_PAM)
+#B8
+effort_B8 <- filter(effort_sanco, BEAUF == 8)
+effort_B8_day <- hms(effort_B8$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B8_day <- (((sum(effort_B8_day, na.rm=TRUE))/60)/60)
+effort_B8_night <- hms(effort_B8$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B8_night <- (((sum(effort_B8_night, na.rm=TRUE))/60)/60)
+effort_B8_PAM <- hms(effort_B8$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B8_PAM <- (((sum(effort_B8_PAM, na.rm=TRUE))/60)/60)
+b8<-(effort_B8_day + effort_B8_night + effort_B8_PAM)
+#B9
+effort_B9 <- filter(effort_sanco, BEAUF == 9)
+effort_B9_day <- hms(effort_B9$VIS_DAY_OBS) %>% period_to_seconds()
+effort_B9_day <- (((sum(effort_B9_day, na.rm=TRUE))/60)/60)
+effort_B9_night <- hms(effort_B9$VIS_NIGHT_OBS) %>% period_to_seconds()
+effort_B9_night <- (((sum(effort_B9_night, na.rm=TRUE))/60)/60)
+effort_B9_PAM <- hms(effort_B9$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
+effort_B9_PAM <- (((sum(effort_B9_PAM, na.rm=TRUE))/60)/60)
+b9<-(effort_B9_day + effort_B9_night + effort_B9_PAM)
+
+total <- b1+ b2+b3+b4+b5+b6+b7+b8+b9
+Beaufort = c("B1", "B2", "B3", "B4","B5", "B6", "B7", "B8", "B9" ,"Total")
+Duration <- c(b1, b2, b3, b4,b5, b6, b7, b8, b9, total)%>% round(digits=2)
+df<- data.frame(Beaufort=Beaufort, Duration=Duration)
+  
+Beauf_table <- gt(df) %>% cols_label(Beaufort = "Beaufort Sea State", Duration= "Duration (HH.HH)")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+Beauf_table
+```
+
+### Visual Detections
+
+Total number of detection events by species:
+
+```{r}
+#| echo: false
+#| warning: false
+
+visualdetect_sanco <- visualdetect %>% filter(VESSEL == "Sanco Swift")
+
+#detections by species
+species_summary <- visualdetect_sanco %>%
+  count(NAME_COMMON)
+species_table <- gt(species_summary) %>% cols_label(NAME_COMMON = "Species",
+                                          n = "Number of detection records")%>% tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+species_table
+```
+
+Total detected individuals by species:
+
+\[AVG DISTANCE AT FIRST DETECTION IS DIFFERENT FROM WHAT IS REPORTED FOR HUMPBACK WHALE AND UNIDENTIFIED WHALE\]
+
+```{r}
+#| echo: false
+#| warning: false
+
+visualdetect_sanco$RANGE_VESSEL_START <- as.numeric(visualdetect_sanco$RANGE_VESSEL_START)
+
+individuals_summary <- visualdetect_sanco %>%
+  group_by(NAME_COMMON) %>%
+  summarize(
+    total_value = sum(TOT_NUM),
+            average_value = round(mean(TOT_NUM),1),
+            dist_value = round(mean(RANGE_VESSEL_START),0))
+
+ind_table <- gt(individuals_summary) %>% cols_label(NAME_COMMON = "Species",
+                  total_value = "Individuals Count",
+                  average_value = "Average group size",
+                  dist_value = "Average distance (m) at first detection")%>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+ind_table
+```
+
+Closest point of approach (CPA) to source (sparker) during the survey:
+
+\[MEAN CPA TO ACTIVE SPARKER FOR HARBOR SEAL DIFFERENT FROM WHAT IS REPORTED\]
+
+```{r}
+#| echo: false
+#| warning: false
+visualdetect_sanco$MITZONE_SILENTSOURCE_DIST <- as.numeric(visualdetect_sanco$MITZONE_SILENTSOURCE_DIST)
+CPA <- visualdetect_sanco %>%
+  group_by(NAME_COMMON) %>%
+  summarize(active_value = round(mean(MITZONE_ACTIVESOURCE_DIST, na.rm = TRUE),2),
+            inactive_value = round(mean(MITZONE_SILENTSOURCE_DIST, na.rm = TRUE),2))
+
+
+CPA_table <- gt(CPA) %>% cols_label(NAME_COMMON = "Species",
+                  active_value = "Mean CPA to active sparker (meters)",
+                  inactive_value = "Mean CPA to silent sparker (meters)") %>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+CPA_table
+```
+
+### Incidental Harassment Authorization (IHA) Level B Exposures
+
+```{r}
+#| echo: false 
+#| warning: false  
+ 
+take <- visualdetect_sanco %>% group_by(NAME_COMMON) %>%   
+  summarize(take_value = sum(LEVELB_TAKE, na.rm = TRUE))   
+
+take_table <- gt(take) %>% cols_label(NAME_COMMON = "Species", take_value = "Total Number of Animals Observed Inside the Level B Harassment Zone") %>%  tab_options(     data_row.padding = px(1),     table.align = "left"   )  
+
+take_table
+```
+
+### Port Calls
+
+Port calls during the survey:
+
+```{r}
+#| echo: false
+#| warning: false
+
+portcall_sanco <- portcall %>% filter(VESSEL == "Sanco Swift")
+
+portcall_table <- gt(portcall_sanco)%>% cols_label(PROJECT_NUMBER = "Project Number", VESSEL = "Vessel", DATE = "Date", TIME = "Time", PORT = "Port", ACTION = "Action", COMMENT_PORT_CALL= "Comments") %>%  tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+
+portcall_table
+```
