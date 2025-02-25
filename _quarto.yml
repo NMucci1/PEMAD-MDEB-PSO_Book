@@ -45,6 +45,3 @@ format:
     code-links: repo
 
     smooth-scroll: true
-  pdf:
-    documentclass: krantz
-    keep-tex: true
