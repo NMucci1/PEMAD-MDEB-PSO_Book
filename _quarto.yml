@@ -1,0 +1,50 @@
+project:
+  type: website
+  render:
+    - qmd/index.qmd
+    - qmd/dictionary.qmd
+    - qmd/COSW.qmd
+    - qmd/AtlanticShores.qmd
+    - qmd/attentive.qmd
+
+
+website:
+  title: "Protected Species Observer Data"
+  navbar:
+    left:
+      - href: qmd/index.qmd
+        text: Home
+      - qmd/dictionary.qmd
+
+
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+      - text: "Data Dictionary"
+        href: qmd/dictionary.qmd
+      - section: "2023 PSO Data"
+        href: qmd/index.qmd
+        contents:
+          - qmd/COSW.qmd
+          - qmd/AtlanticShores.qmd
+          - qmd/attentive.qmd
+
+
+format:
+  html:
+    theme: lumen
+    css: styles.css
+    toc: true
+    toc-title: On this page
+    toc-location: right
+
+    other-links:
+      - text: NOAA Fisheries Incidental Take Authorizations
+        href: https://www.fisheries.noaa.gov/national/marine-mammal-protection/incidental-take-authorizations-other-energy-activities-renewable
+    code-links: repo
+
+    smooth-scroll: true
+  pdf:
+    documentclass: krantz
+    keep-tex: true
