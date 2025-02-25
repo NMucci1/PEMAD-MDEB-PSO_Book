@@ -1,6 +1,6 @@
 
 .Rproj.user
-data/
+qmd/data/
 docs/
 R/
 /.quarto/

@@ -19,7 +19,6 @@ Total hours of sparker operation:
 #| echo: false
 #| warning: false
 
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
 #load libraries
 library(readr)
 library(tidyverse)
@@ -449,7 +448,6 @@ Total hours of sparker activity:
 #| echo: false
 #| warning: false
 
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
 #load libraries
 library(readr)
 library(tidyverse)
@@ -511,7 +509,7 @@ Summary of monitoring effort:
 #| echo: false
 #| warning: false
 
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
+
 effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
 effort_emma <- effort %>% filter(VESSEL == "Emma McCall") %>% filter(PROJECT_NUMBER == 219236)
 
@@ -891,7 +889,6 @@ Total hours of sparker operation:
 #| echo: false
 #| warning: false
 
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
 #load libraries
 library(readr)
 library(tidyverse)
@@ -1018,7 +1015,6 @@ Visibility conditions:
 ```{r}
 #| echo: false
 #| warning: false
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
 effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
 effort_marc_em <- effort %>% filter(VESSEL == "Emma McCall" & PROJECT_NUMBER == 222794 | VESSEL == "Marcelle Bordelon" & PROJECT_NUMBER == 219236)
 #visibility conditions

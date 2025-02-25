@@ -17,7 +17,7 @@ Total hours of sparker operation:
 #| echo: false
 #| warning: false
 
-setwd('C:/Users/nicole.mucci/Documents/R/PEMAD-MDEB-PSO')
+
 #load libraries
 library(readr)
 library(tidyverse)
