@@ -4,3 +4,5 @@ data/
 docs/
 R/
 /.quarto/
+_site/
+.Rhistory
