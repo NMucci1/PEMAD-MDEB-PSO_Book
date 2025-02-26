@@ -1,9 +1,0 @@
----
-title: "Offshore Wind Development Protected Species Observer (PSO) Data"
-format: html
-editor: visual
----
-
-## HRG Survey Protected Species Observer Data
-
-Prior to offshore wind farm construction, developers conduct High Resolution Geophysical (HRG) surveys in the lease area to better characterize the seafloor. Protected species monitoring is required during survey operations in accordance with Bureau of Ocean Energy Management (BOEM) and National Marine Fisheries Service (NMFS) regulations. Protected Species Observer (PSO) data from developer HRG survey operations are summarized here and organized by developer/project.
