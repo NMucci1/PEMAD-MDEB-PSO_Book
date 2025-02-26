@@ -29,7 +29,8 @@ website:
           - qmd/COSW.qmd
           - qmd/AtlanticShores.qmd
           - qmd/attentive.qmd
-
+execute:
+  freeze: auto
 
 format:
   html:

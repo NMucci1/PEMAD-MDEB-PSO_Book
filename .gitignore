@@ -1,8 +1,8 @@
 
 .Rproj.user
 qmd/data/
-docs/
 R/
+.Rhistory
+
 /.quarto/
 _site/
-.Rhistory
