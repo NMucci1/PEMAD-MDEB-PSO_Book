@@ -27,13 +27,13 @@ library(tidyr)
 library(stringr)
 library(gt)
 
-operations <- readr::read_csv("data/Attentive/Attentive2023_Operations_Tidy.csv")
-visualdetect<- readr::read_csv("data/Attentive/Attentive2023_VisualDetect_Tidy.csv")
-effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
-operations <- readr::read_csv("data/Attentive/Attentive2023_Operations_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv")
-acousticdetect <- readr::read_csv("data/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/2023/Attentive/Attentive2023_Operations_Tidy.csv")
+visualdetect<- readr::read_csv("data/2023/Attentive/Attentive2023_VisualDetect_Tidy.csv")
+effort <- readr::read_csv("data/2023/Attentive/Attentive2023_Effort_Tidy.csv")
+operations <- readr::read_csv("data/2023/Attentive/Attentive2023_Operations_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv")
+acousticdetect <- readr::read_csv("data/2023/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
 
 operations_marcelle <- operations %>% filter(VESSEL == "Marcelle Bordelon") %>% filter(PROJECT_NUMBER == 222076)
 
@@ -455,13 +455,15 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 library(lubridate)
-operations <- readr::read_csv("data/Attentive/Attentive2023_Operations_Tidy.csv")
-visualdetect<- readr::read_csv("data/Attentive/Attentive2023_VisualDetect_Tidy.csv")
-effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
-operations <- readr::read_csv("data/Attentive/Attentive2023_Operations_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv")
-acousticdetect <- readr::read_csv("data/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+library(gt)
+
+operations <- readr::read_csv("data/2023/Attentive/Attentive2023_Operations_Tidy.csv")
+visualdetect<- readr::read_csv("data/2023/Attentive/Attentive2023_VisualDetect_Tidy.csv")
+effort <- readr::read_csv("data/2023/Attentive/Attentive2023_Effort_Tidy.csv")
+operations <- readr::read_csv("data/2023/Attentive/Attentive2023_Operations_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv")
+acousticdetect <- readr::read_csv("data/2023/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
 operations_emma <- operations %>% filter(VESSEL == "Emma McCall") %>% filter(PROJECT_NUMBER == 219236)
 
 sparker_sursource <- operations_emma %>% hms(operations_emma$DUR_SURSOURCE) %>% period_to_seconds()
@@ -503,14 +505,12 @@ op_table
 
 Summary of monitoring effort:
 
-\[THIS NEEDS TO BE FIXED\]
-
 ```{r}
 #| echo: false
 #| warning: false
 
 
-effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
+effort <- readr::read_csv("data/2023/Attentive/Attentive2023_Effort_Tidy.csv")
 effort_emma <- effort %>% filter(VESSEL == "Emma McCall") %>% filter(PROJECT_NUMBER == 219236)
 
 effort_emma$SOURCE_DAY_OBS <- hms::as_hms(effort_emma$SOURCE_DAY_OBS)
@@ -534,11 +534,11 @@ sparkers_nite_pam <- hms(effort_emma$SOURCE_VIS_PAM_NIGHT)
 sparkers_nite_pam_sec <- period_to_seconds(sparkers_nite_pam)
 sparkers_nite_pam_hrs <- (((sum(sparkers_nite_pam_sec, na.rm=TRUE))/60)/60)
 sparkers_active <- sum(sparkers_nite_hrs + sparkers_day_hrs + sparkers_nite_pam_hrs+ sparkers_day_pam_hrs)
-
+sparkers_vis <- sum(sparkers_nite_hrs + sparkers_day_hrs + sparkers_day_pam_hrs + sparkers_nite_pam_hrs )
 sdp <- hms(effort_emma$SOURCE_VIS_PAM_DAY)
 sdp_sec <- period_to_seconds(sdp)
 sdp_hrs <- (((sum(sdp_sec, na.rm=TRUE))/60)/60)
-
+sparkers_pam <- sparkers_nite_pam_hrs + sparkers_day_pam_hrs
 #PAM daytime and nighttime
 pam_day<- hms(effort_emma$VIS_PAM_DAY_OBS)
 pam_day_sec <- period_to_seconds(pam_day)
@@ -557,8 +557,8 @@ total_pam <- pam_day_hrs + pam_night_hrs
 total_obs <- (day_obs_hrs + night_obs_hrs + total_pam)
 
 monitoring <- c("Sparker active", "Sparker not active", "Daytime", "Nighttime", "Total")
-visual <- c(1, 1,total_day, total_night, total_obs) %>% round(digits = 2)
-PAM <- c(1, 1, pam_day_hrs, pam_night_hrs, total_pam) %>% round(digits = 2)
+visual <- c(sparkers_vis,(total_obs - sparkers_vis),total_day, total_night, total_obs) %>% round(digits = 2)
+PAM <- c(sparkers_pam , (total_pam-sparkers_pam), pam_day_hrs, pam_night_hrs, total_pam) %>% round(digits = 2)
 
 df <- data.frame(Monitoring=monitoring, Visual = visual, PAM= PAM)
 
@@ -767,7 +767,26 @@ Beauf_table
 
 Total number of detection events by species:
 
-\[MEAN GROUP SIZE OF HUMPBACK WHALE DIFFERENT FROM WHAT WAS REPORTED\]
+```{r}
+#| echo: false
+#| warning: false
+
+#detections by species
+visualdetect_emma <- visualdetect %>% filter(VESSEL == "Emma McCall") %>% filter(PROJECT_NUMBER == 219236)
+
+species_summary <- visualdetect_emma %>%
+  count(NAME_COMMON)
+species_table <- gt(species_summary) %>% cols_label(NAME_COMMON = "Species",
+                                          n = "Number of detection records")%>% tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+species_table
+```
+
+Total detected individuals by species, and detection and distance summaries:
+
+\[MEAN GROUP SIZE OF HUMPBACK WHALE DIFFERENT FROM WHAT WAS REPORTED, MEAN CPA AT FIRST DETECTION FOR UNIDENTIFIED WHALE DIFFERENT FROM WHAT WAS REPORTED\]
 
 ```{r}
 #| echo: false
@@ -897,12 +916,12 @@ library(tidyr)
 library(stringr)
 library(gt)
 
-visualdetect<- readr::read_csv("data/Attentive/Attentive2023_VisualDetect_Tidy.csv")
-effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
-operations <- readr::read_csv("data/Attentive/Attentive2023_Operations_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv")
-acousticdetect <- readr::read_csv("data/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
-portcall <- readr::read_csv("data/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+visualdetect<- readr::read_csv("data/2023/Attentive/Attentive2023_VisualDetect_Tidy.csv")
+effort <- readr::read_csv("data/2023/Attentive/Attentive2023_Effort_Tidy.csv")
+operations <- readr::read_csv("data/2023/Attentive/Attentive2023_Operations_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv")
+acousticdetect <- readr::read_csv("data/2023/Attentive/Attentive2023_AcousticDetect_Tidy.csv")
+portcall <- readr::read_csv("data/2023/Attentive/Attentive2023_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
 oper_marc_emma <- operations %>% filter(VESSEL == "Emma McCall" & PROJECT_NUMBER == 222794 |VESSEL == "Marcelle Bordelon" & PROJECT_NUMBER == 219236)
 
 
@@ -1015,7 +1034,7 @@ Visibility conditions:
 ```{r}
 #| echo: false
 #| warning: false
-effort <- readr::read_csv("data/Attentive/Attentive2023_Effort_Tidy.csv")
+effort <- readr::read_csv("data/2023/Attentive/Attentive2023_Effort_Tidy.csv")
 effort_marc_em <- effort %>% filter(VESSEL == "Emma McCall" & PROJECT_NUMBER == 222794 | VESSEL == "Marcelle Bordelon" & PROJECT_NUMBER == 219236)
 #visibility conditions
 effort_marc_em$VISIBIL <- gsub("5-Feb", "2-5", effort_marc_em$VISIBIL)
@@ -1221,6 +1240,24 @@ Beauf_table
 ### Visual Detections
 
 Total number of detection events by species:
+
+```{r}
+#| echo: false
+#| warning: false
+
+#detections by species
+visualdetect_marc_em <- visualdetect %>% filter(VESSEL == "Emma McCall" & PROJECT_NUMBER == 222794 | VESSEL == "Marcelle Bordelon" & PROJECT_NUMBER == 219236)
+species_summary <- visualdetect_marc_em %>%
+  count(NAME_COMMON)
+species_table <- gt(species_summary) %>% cols_label(NAME_COMMON = "Species",
+                                          n = "Number of detection records")%>% tab_options(
+    data_row.padding = px(1),
+    table.align = "left"
+  )
+species_table
+```
+
+Total detected individuals by species, and detection and distance summaries:
 
 \[SOME OF THESE NUMBERS ARE DIFFERENT THAN WHAT WAS REPORTED\]
 

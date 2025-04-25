@@ -27,10 +27,10 @@ library(gt)
 
 #import tidy data
 #import with latin encoding because some PSO names have accents
-visualdetect <- readr::read_csv("data/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
-effort <- readr::read_csv("data/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
-operations <- readr::read_csv("data/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
-portcall <- readr::read_csv("data/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+visualdetect <- readr::read_csv("data/2023/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
+effort <- readr::read_csv("data/2023/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/2023/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
+portcall <- readr::read_csv("data/2023/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
 operations_westerly <- operations %>% filter(VESSEL == "Westerly") 
 
 sparker_sursource <- operations_westerly %>% hms(operations_westerly$DUR_SURSOURCE) %>% period_to_seconds()
@@ -376,10 +376,10 @@ library(gt)
 
 #import tidy data
 #import with latin encoding because some PSO names have accents
-visualdetect <- readr::read_csv("data/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
-effort <- readr::read_csv("data/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
-operations <- readr::read_csv("data/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
-portcall <- readr::read_csv("data/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
+visualdetect <- readr::read_csv("data/2023/COSW/COSW_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
+effort <- readr::read_csv("data/2023/COSW/COSW_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/2023/COSW/COSW_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
+portcall <- readr::read_csv("data/2023/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
 operations_sanco <- operations %>% filter(VESSEL == "Sanco Swift") 
 
 sparker_sursource <- operations_sanco %>% hms(operations_sanco$DUR_SURSOURCE) %>% period_to_seconds()
@@ -694,11 +694,12 @@ species_table
 
 Total detected individuals by species:
 
-\[AVG DISTANCE AT FIRST DETECTION IS DIFFERENT FROM WHAT IS REPORTED FOR HUMPBACK WHALE AND UNIDENTIFIED WHALE\]
+\[AVG DISTANCE AT FIRST DETECTION IS DIFFERENT FROM WHAT IS REPORTED FOR HUMPBACK WHALE\]
 
 ```{r}
 #| echo: false
 #| warning: false
+visualdetect_sanco$NAME_COMMON <- gsub("Unidentifiable Baleen whale", "Unidentifiable whale", visualdetect_sanco$NAME_COMMON)
 
 visualdetect_sanco$RANGE_VESSEL_START <- as.numeric(visualdetect_sanco$RANGE_VESSEL_START)
 

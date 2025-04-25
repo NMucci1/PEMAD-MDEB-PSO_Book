@@ -7,7 +7,7 @@ editor: visual
 ## Summary of data tables
 
 | Data table     | Description                                                                                                                                                      |
-|-------------------|-----------------------------------------------------|
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | project        | Project specific data, including dates, home port, vessel information, equipment used and equipment specifications                                               |
 | operations     | Shipboard operations of survey equipment, including dates and times of HRG survey equipment ramp up, testing, and full power                                     |
 | effort         | PSO monitoring effort, including dates, times, and lat/long of monitoring, type of monitoring (visual or acoustic), and weather and conditions during monitoring |
@@ -21,7 +21,7 @@ editor: visual
 Data dictionary for ***project*** data table
 
 | Value               | Description                                                                                                                                                                            |
-|----------------------|--------------------------------------------------|
+|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | PROJECT_NUMBER      | Offshore wind project number                                                                                                                                                           |
 | PROJECT_NAME        | Name of offshore wind project                                                                                                                                                          |
 | LEASE_NUM           | BOEM lease area number                                                                                                                                                                 |
@@ -61,7 +61,7 @@ Data dictionary for ***project*** data table
 Data dictionary for ***operations*** data table
 
 | Value                  | Description                                                                           |
-|------------------------|------------------------------------------------|
+|------------------------|---------------------------------------------------------------------------------------|
 | PROJECT_NUMBER         | Offshore wind project number                                                          |
 | VESSEL                 | Name of survey vessel                                                                 |
 | DATE                   | Date (MM/DD/YYYY)                                                                     |
@@ -106,7 +106,7 @@ Data dictionary for ***operations*** data table
 Data dictionary for ***effort*** data table
 
 | Value                | Description                                                                    |
-|----------------------|--------------------------------------------------|
+|----------------------|--------------------------------------------------------------------------------|
 | PROJECT_NUMBER       | Offshore wind project number                                                   |
 | VESSEL               | Name of survey vessel                                                          |
 | DATE                 | Date (MM/DD/YYYY)                                                              |
@@ -168,7 +168,7 @@ Data dictionary for ***effort*** data table
 Data dictionary for ***visualdetect*** data table
 
 | Value                          | Description                                                                                                                                                                                                                                               |
-|-------------------------|-----------------------------------------------|
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | PROJECT_NUMBER                 | Offshore wind project number                                                                                                                                                                                                                              |
 | VESSEL                         | Name of survey vessel                                                                                                                                                                                                                                     |
 | DATE                           | Date (MM/DD/YYYY)                                                                                                                                                                                                                                         |
@@ -261,7 +261,7 @@ Data dictionary for ***visualdetect*** data table
 Data dictionary for ***acousticdetect*** data table
 
 | Value                      | Description                                                                                                                                                                                                                                                              |
-|--------------------------|----------------------------------------------|
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | PROJECT_NUMBER             | Offshore wind project number                                                                                                                                                                                                                                             |
 | VESSEL                     | Name of survey vessel                                                                                                                                                                                                                                                    |
 | DATE                       | Date (MM/DD/YYYY)                                                                                                                                                                                                                                                        |
@@ -348,7 +348,7 @@ Data dictionary for ***PSOs*** data table
 Description key for Beaufort Number
 
 | Beaufort Number | Description     | Wave Height (m) | Sea Conditions                                                                                                                                                                                                                                                        |
-|---------|----------|--------|---------------------------------------------|
+|-----------------|-----------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0               | Calm            | 0               | Sea like a mirror                                                                                                                                                                                                                                                     |
 | 1               | Light air       | 0-0.3           | Ripples with appearance of scales are formed, without foam crests                                                                                                                                                                                                     |
 | 2               | Light breeze    | 0.3-0.6         | Small wavelets still short but more pronounced; crests have a glassy appearance but do not break                                                                                                                                                                      |

@@ -6,7 +6,7 @@ project:
     - qmd/COSW.qmd
     - qmd/AtlanticShores.qmd
     - qmd/attentive.qmd
-
+    - qmd/Bluepoint.qmd
 
 website:
   title: "Protected Species Observer Data"
@@ -15,7 +15,6 @@ website:
       - href: qmd/index.qmd
         text: Home
       - qmd/dictionary.qmd
-
 
   sidebar:
     style: "docked"
@@ -29,6 +28,7 @@ website:
           - qmd/COSW.qmd
           - qmd/AtlanticShores.qmd
           - qmd/attentive.qmd
+          - qmd/Bluepoint.qmd
 execute:
   freeze: auto
 

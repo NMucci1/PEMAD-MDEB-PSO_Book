@@ -27,11 +27,11 @@ library(stringr)
 library(gt)
 
 #import tidy data
-visualdetect <- readr::read_csv("data/AtlanticShores/AtlanticShores_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
-effort <- readr::read_csv("data/AtlanticShores/AtlanticShores_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
-operations <- readr::read_csv("data/AtlanticShores/AtlanticShores_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
+visualdetect <- readr::read_csv("data/2023/AtlanticShores/AtlanticShores_VisualDetect_Tidy.csv", locale = locale(encoding = "latin1"))
+effort <- readr::read_csv("data/2023/AtlanticShores/AtlanticShores_Effort_Tidy.csv", locale = locale(encoding = "latin1"))
+operations <- readr::read_csv("data/2023/AtlanticShores/AtlanticShores_Operations_Tidy.csv", locale = locale(encoding = "latin1"))
 #portcall <- readr::read_csv("data/COSW/COSW_PortCall_Tidy.csv", locale = locale(encoding = "latin1"))
-project <- readr::read_csv("data/AtlanticShores/AtlanticShores_Project.csv", locale = locale(encoding = "latin1"))
+project <- readr::read_csv("data/2023/AtlanticShores/AtlanticShores_Project.csv", locale = locale(encoding = "latin1"))
 #Fugro Enterprise
 operations_fugro <- operations %>% filter(VESSEL == "Fugro Enterprise") 
 
@@ -98,7 +98,7 @@ day_obs_sec <- period_to_seconds(day_obs)
 day_obs_hrs <- (((sum(day_obs_sec, na.rm=TRUE))/60)/60)
 night_obs_sec <- period_to_seconds(night_obs)
 night_obs_hrs <- (((sum(night_obs_sec, na.rm=TRUE))/60)/60)
-total_obs <- (day_obs_hrs + night_obs_hrs)
+
 #sparkers active 
 
 sparkers_day <- (hms(effort$SOURCE_DAY_OBS))
@@ -118,6 +118,7 @@ pam_night<- hms(effort$VIS_PAM_NIGHT_OBS)
 pam_night_sec <- period_to_seconds(pam_night)
 pam_night_hrs <- (((sum(pam_night_sec , na.rm=TRUE))/60)/60)
 silent_pam <- pam_night_hrs - sparkers_pam_hrs
+total_obs <- (day_obs_hrs + night_obs_hrs + sparkers_pam_hrs + silent_pam)
 
 monitoring <- c("Source active-daytime", "Source silent-daytime", "Source active-nighttime", "Source silent-nighttime", "Souce active-PAM", "Source silent-PAM", "Total")
 visual <- c(sparkers_day_hrs, silent_day, sparkers_nite_hrs, silent_night,sparkers_pam_hrs,silent_pam,total_obs) %>% round(digits=2)
