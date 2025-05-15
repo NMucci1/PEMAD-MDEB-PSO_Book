@@ -351,6 +351,8 @@ ind_table
 
 Closest point of approach (CPA) to source (sparker) during detections:
 
+\[MEAN CPA TO ACTIVE SOURCE FOR COMMON DOLPHIN DIFFERENT THAN WHAT WAS REPORTED\]
+
 ```{r}
 #| echo: false
 #| warning: false

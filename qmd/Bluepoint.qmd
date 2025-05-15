@@ -127,6 +127,8 @@ op_table
 
 Summary of monitoring effort:
 
+\[MANY VALUES DIFFERENT THAN WHAT WAS REPORTED\]
+
 ```{r}
 #| echo: false
 #| warning: false
@@ -269,28 +271,36 @@ monitoring_table
 
 Summary of visibility conditions during the survey:
 
+\[DIFFERENT THAN WHAT WAS REPORTED\]
+
 ```{r}
 #| echo: false
 #| warning: false
-
-print(unique(effort$VISIBIL))
 
 #visibility conditions
 #monitoring effort with >5 km visibiilIty 
 effort_highvis <- filter(effort, VISIBIL == ">5" | VISIBIL == "6" | VISIBIL == "7" | VISIBIL == "8" |VISIBIL == "9" | VISIBIL == "10")
 effort_high <- hms(effort_highvis$VIS_DAY_OBS) %>% period_to_seconds()
 effort_high <- (((sum(effort_high, na.rm=TRUE))/60)/60)
+effort_s <- hms(effort_highvis$SOURCE_DAY_OBS) %>% period_to_seconds()
+effort_s <- (((sum(effort_s, na.rm=TRUE))/60)/60)
+effort_n <- hms(effort_highvis$SOURCE_NIGHT_OBS) %>% period_to_seconds()
+effort_n <- (((sum(effort_n, na.rm=TRUE))/60)/60)
 effort_high_PV <- hms(effort_highvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
 effort_high_PV <- (((sum(effort_high_PV, na.rm=TRUE))/60)/60)
 effort_night <- hms(effort_highvis$VIS_NIGHT_OBS) %>% period_to_seconds()
 effort_night <- (((sum(effort_night, na.rm=TRUE))/60)/60)
 effort_high_P <- hms(effort_highvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
 effort_high_P <- (((sum(effort_high_P, na.rm=TRUE))/60)/60)
-greater_five <- (effort_high + effort_high_PV + effort_night + effort_high_P)
+greater_five <- (effort_high + effort_high_PV + effort_night + effort_high_P + effort_s + effort_n)
 
 effort_midvis <- filter(effort, VISIBIL == "2-5" | VISIBIL == "2" | VISIBIL == "3" | VISIBIL == "4" | VISIBIL == "5" )
 effort_midvis_day <- hms(effort_midvis$VIS_DAY_OBS) %>% period_to_seconds()
 effort_midvis_day <- (((sum(effort_midvis_day, na.rm=TRUE))/60)/60)
+effort_mid_s <- hms(effort_midvis$SOURCE_DAY_OBS) %>% period_to_seconds()
+effort_mid_s <- (((sum(effort_s, na.rm=TRUE))/60)/60)
+effort_mid_n <- hms(effort_midvis$SOURCE_NIGHT_OBS) %>% period_to_seconds()
+effort_mid_n <- (((sum(effort_n, na.rm=TRUE))/60)/60)
 effort_midvis_night <- hms(effort_midvis$VIS_NIGHT_OBS) %>% period_to_seconds()
 effort_midvis_night <- (((sum(effort_midvis_night, na.rm=TRUE))/60)/60)
 effort_midvis_PV <- hms(effort_midvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
@@ -298,18 +308,22 @@ effort_midvis_PV <- (((sum(effort_midvis_PV, na.rm=TRUE))/60)/60)
 effort_midvis_P <- hms(effort_midvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
 effort_midvis_P <- (((sum(effort_midvis_P, na.rm=TRUE))/60)/60)
 
-two_to_five <- (effort_midvis_day + effort_midvis_night + effort_midvis_P + effort_midvis_PV)
+two_to_five <- (effort_midvis_day + effort_midvis_night + effort_midvis_P + effort_midvis_PV + effort_mid_s + effort_mid_n)
 
 effort_lowvis <- filter(effort, VISIBIL == "0.5-1" | VISIBIL == "1-2" | VISIBIL == "0.05-0.1" |VISIBIL == "0.3-0.5" | VISIBIL == "<.05" |VISIBIL == "0.1-0.3" | VISIBIL == "1" | VISIBIL == "0.5" | VISIBIL == "0.6" |VISIBIL == "0.7" | VISIBIL == "0.8" |VISIBIL == "0.9" |VISIBIL == "0.2" |VISIBIL == "0.3" | VISIBIL == "0.4" )
 effort_lowvis_day <- hms(effort_lowvis$VIS_DAY_OBS) %>% period_to_seconds()
 effort_lowvis_day <- (((sum(effort_lowvis_day, na.rm=TRUE))/60)/60)
 effort_lowvis_night <- hms(effort_lowvis$VIS_NIGHT_OBS) %>% period_to_seconds()
 effort_lowvis_night <- (((sum(effort_lowvis_night, na.rm=TRUE))/60)/60)
+effort_low_s <- hms(effort_lowvis$SOURCE_DAY_OBS) %>% period_to_seconds()
+effort_low_s <- (((sum(effort_s, na.rm=TRUE))/60)/60)
+effort_low_n <- hms(effort_lowvis$SOURCE_NIGHT_OBS) %>% period_to_seconds()
+effort_low_n <- (((sum(effort_n, na.rm=TRUE))/60)/60)
 effort_lowvis_PV <- hms(effort_lowvis$VIS_PAM_DAY_OBS) %>% period_to_seconds()
 effort_lowvis_PV <- (((sum(effort_lowvis_PV, na.rm=TRUE))/60)/60)
 effort_lowvis_P <- hms(effort_lowvis$VIS_PAM_NIGHT_OBS) %>% period_to_seconds()
 effort_lowvis_P <- (((sum(effort_lowvis_P, na.rm=TRUE))/60)/60)
-less_than_2 <- (effort_lowvis_P + effort_lowvis_PV + effort_lowvis_night + effort_lowvis_day)
+less_than_2 <- (effort_lowvis_P + effort_lowvis_PV + effort_lowvis_night + effort_lowvis_day+effort_low_n + effort_low_s)
 
 Visibility <- c("Greater than 5 km", "2 to 5 km", "Less than 2 km")
 Duration <- c(greater_five, two_to_five, less_than_2) %>% round(digits=2)
@@ -323,6 +337,8 @@ visibility_table
 ```
 
 Beaufort Sea State during the survey:
+
+\[DIFFERENT THAN WHAT WAS REPORTED\]
 
 ```{r}
 #| echo: false
@@ -442,11 +458,11 @@ Beauf_table
 
 Swell height during monitoring during the survey:
 
+\[DIFFERENT THAN WHAT WAS REPORTED\]
+
 ```{r}
 #| echo: false
 #| warning: false
-
-print(unique(effort$SWELL))
 
 lowswell <- filter(effort, SWELL == "<2" | SWELL == "0.4"| SWELL ==  "0.3" | SWELL == "0.5" | SWELL =="0.8" | SWELL =="1"| SWELL =="0.6"| SWELL =="0.7"| SWELL == "1.1" | SWELL =="0.9" | SWELL == "1.2" |SWELL == "1.3" | SWELL == "0.2"| SWELL ==  "0.6."|SWELL ==  "0.1" |SWELL ==  "1.5"|SWELL ==  "1.75"|SWELL == "0"|SWELL =="0.75")
 s_day <- hms(lowswell$VIS_DAY_OBS) %>% period_to_seconds()
